@@ -124,4 +124,79 @@ FROM runs
 WHERE file_name LIKE '%\_[0-9]%\_
 
 
+-------------------------------------------
 
+SELECT DISTINCT regex
+FROM (
+    SELECT '^' + 
+        REPLACE(SUBSTRING(file_name, 1, CHARINDEX('.', file_name) - 1), '_', '\_') +
+        '\.' +
+        REPLACE(SUBSTRING(file_name, CHARINDEX('.', file_name) + 1, LEN(file_name)), '_', '\_') +
+        '$' AS regex
+    FROM runs
+    WHERE file_name LIKE '%.%'
+    UNION ALL
+    SELECT '^' + 
+        REPLACE(SUBSTRING(file_name, 1, CHARINDEX('_', file_name) - 1), '.', '\.') +
+        '\_' +
+        REPLACE(SUBSTRING(file_name, CHARINDEX('_', file_name) + 1, LEN(file_name)), '.', '\.') +
+        '$' AS regex
+    FROM runs
+    WHERE file_name LIKE '%\_%' ESCAPE '\'
+    UNION ALL
+    SELECT '^' + 
+        REPLACE(SUBSTRING(file_name, 1, CHARINDEX('_', file_name) - 1), '.', '\.') +
+        '\_' +
+        REPLACE(SUBSTRING(file_name, CHARINDEX('_', file_name) + 1, CHARINDEX('_', file_name, CHARINDEX('_', file_name) + 1) - CHARINDEX('_', file_name) - 1), '.', '\.') +
+        '\_' +
+        REPLACE(SUBSTRING(file_name, CHARINDEX('_', file_name, CHARINDEX('_', file_name) + 1) + 1, LEN(file_name)), '.', '\.') +
+        '$' AS regex
+    FROM runs
+    WHERE file_name LIKE '%\_%\_%' ESCAPE '\'
+    UNION ALL
+    SELECT '^' + 
+        REPLACE(SUBSTRING(file_name, 1, PATINDEX('%[0-9]%', file_name) - 1), '_', '\_') +
+        '[0-9]+' +
+        '\.' +
+        REPLACE(SUBSTRING(file_name, CHARINDEX('.', file_name) + 1, LEN(file_name)), '_', '\_') +
+        '$' AS regex
+    FROM runs
+    WHERE file_name LIKE '%[0-9]%.%'
+    UNION ALL
+    SELECT '^' + 
+        REPLACE(SUBSTRING(file_name, 1, CHARINDEX('.', file_name) - 1), '_', '\_') +
+        '\.' +
+        '[0-9]+' +
+        '$' AS regex
+    FROM runs
+    WHERE file_name LIKE '%.%[0-9]'
+    UNION ALL
+    SELECT '^' + 
+        REPLACE(SUBSTRING(file_name, 1, PATINDEX('%[0-9]%', file_name) - 1), '.', '\.') +
+        '[0-9]+' +
+        '\_' +
+        REPLACE(SUBSTRING(file_name, CHARINDEX('_', file_name) + 1, LEN(file_name)), '.', '\.') +
+        '$' AS regex
+    FROM runs
+    WHERE file_name LIKE '%[0-9]\_%' ESCAPE '\'
+    UNION ALL
+    SELECT '^' + 
+        REPLACE(SUBSTRING(file_name, 1, CHARINDEX('_', file_name) - 1), '.', '\.') +
+        '\_' +
+        '[0-9]+' +
+        '$' AS regex
+    FROM runs
+    WHERE file_name LIKE '%\_[0-9]%' ESCAPE '\'
+    UNION ALL
+    SELECT '^' + 
+        REPLACE(SUBSTRING(file_name, 1, CHARINDEX('_', file_name) - 1), '.', '\.') +
+        '\_' +
+        '[0-9]+' +
+        '\_' +
+        REPLACE(SUBSTRING(file_name, CHARINDEX('_', file_name, CHARINDEX('_', file_name) + 1) + 1, LEN(file_name)), '.', '\.') +
+        '$' AS regex
+    FROM runs
+    WHERE file_name LIKE '%\_[0-9]%\_%' ESCAPE '\'
+) AS subquery;
+
+--------------
