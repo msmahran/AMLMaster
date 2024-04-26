@@ -18,35 +18,25 @@ SELECT DISTINCT
     END AS FileNameFormat
 FROM YourTable;
 
+WITH FileNameFormats AS (
+    SELECT
+        file_name,
+        CASE
+            WHEN file_name LIKE '%[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]%' THEN 'Date'
+            WHEN file_name LIKE '%[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]%' THEN 'Date'
+            WHEN file_name LIKE '%[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]%' THEN 'Date'
+            WHEN file_name LIKE '%_[A-Za-z0-9]%' THEN 'Underscore'
+            WHEN file_name LIKE '%.[A-Za-z0-9]%' THEN 'Dot'
+            WHEN file_name LIKE '%[A-Za-z]%[0-9]%' THEN 'LetterNumber'
+            WHEN file_name LIKE '%[0-9]%[A-Za-z]%' THEN 'NumberLetter'
+            WHEN file_name LIKE '%[A-Za-z]%' THEN 'Letter'
+            WHEN file_name LIKE '%[0-9]%' THEN 'Number'
+            ELSE 'Other'
+        END AS FileNameFormat
+    FROM runs
+)
 SELECT
-    CASE
-        WHEN file_name LIKE '%[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]%' THEN 'Date'
-        WHEN file_name LIKE '%[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]%' THEN 'Date'
-        WHEN file_name LIKE '%[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]%' THEN 'Date'
-        WHEN file_name LIKE '%_[A-Za-z0-9]%' THEN 'Underscore'
-        WHEN file_name LIKE '%.[A-Za-z0-9]%' THEN 'Dot'
-        WHEN file_name LIKE '%[A-Za-z]%[0-9]%' THEN 'LetterNumber'
-        WHEN file_name LIKE '%[0-9]%[A-Za-z]%' THEN 'NumberLetter'
-        WHEN file_name LIKE '%[A-Za-z]%' THEN 'Letter'
-        WHEN file_name LIKE '%[0-9]%' THEN 'Number'
-        ELSE 'Other'
-    END AS FileNameFormat,
-    (
-        SELECT TOP 1 file_name
-        FROM runs AS innerRuns
-        WHERE innerRuns.FileNameFormat = outerRuns.FileNameFormat
-    ) AS SampleFileName
-FROM runs AS outerRuns
-GROUP BY
-    CASE
-        WHEN file_name LIKE '%[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]%' THEN 'Date'
-        WHEN file_name LIKE '%[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]%' THEN 'Date'
-        WHEN file_name LIKE '%[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]%' THEN 'Date'
-        WHEN file_name LIKE '%_[A-Za-z0-9]%' THEN 'Underscore'
-        WHEN file_name LIKE '%.[A-Za-z0-9]%' THEN 'Dot'
-        WHEN file_name LIKE '%[A-Za-z]%[0-9]%' THEN 'LetterNumber'
-        WHEN file_name LIKE '%[0-9]%[A-Za-z]%' THEN 'NumberLetter'
-        WHEN file_name LIKE '%[A-Za-z]%' THEN 'Letter'
-        WHEN file_name LIKE '%[0-9]%' THEN 'Number'
-        ELSE 'Other'
-    END;
+    FileNameFormat,
+    (SELECT TOP 1 file_name FROM FileNameFormats AS f2 WHERE f2.FileNameFormat = f1.FileNameFormat) AS SampleFileName
+FROM FileNameFormats AS f1
+GROUP BY FileNameFormat;
