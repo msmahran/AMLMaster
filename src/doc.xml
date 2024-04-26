@@ -17,3 +17,48 @@ SELECT DISTINCT
         ELSE 'Other'
     END AS FileNameFormat
 FROM YourTable;
+
+SELECT
+    CASE
+        WHEN FileName LIKE '%[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]%' THEN 'Date'
+        WHEN FileName LIKE '%[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]%' THEN 'Date'
+        WHEN FileName LIKE '%[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]%' THEN 'Date'
+        WHEN FileName LIKE '%_[A-Za-z0-9]%' THEN 'Underscore'
+        WHEN FileName LIKE '%.[A-Za-z0-9]%' THEN 'Dot'
+        WHEN FileName LIKE '%[A-Za-z]%[0-9]%' THEN 'LetterNumber'
+        WHEN FileName LIKE '%[0-9]%[A-Za-z]%' THEN 'NumberLetter'
+        WHEN FileName LIKE '%[A-Za-z]%' THEN 'Letter'
+        WHEN FileName LIKE '%[0-9]%' THEN 'Number'
+        ELSE 'Other'
+    END AS FileNameFormat,
+    (
+        SELECT TOP 1 FileName
+        FROM YourTable
+        WHERE
+            CASE
+                WHEN FileName LIKE '%[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]%' THEN 'Date'
+                WHEN FileName LIKE '%[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]%' THEN 'Date'
+                WHEN FileName LIKE '%[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]%' THEN 'Date'
+                WHEN FileName LIKE '%_[A-Za-z0-9]%' THEN 'Underscore'
+                WHEN FileName LIKE '%.[A-Za-z0-9]%' THEN 'Dot'
+                WHEN FileName LIKE '%[A-Za-z]%[0-9]%' THEN 'LetterNumber'
+                WHEN FileName LIKE '%[0-9]%[A-Za-z]%' THEN 'NumberLetter'
+                WHEN FileName LIKE '%[A-Za-z]%' THEN 'Letter'
+                WHEN FileName LIKE '%[0-9]%' THEN 'Number'
+                ELSE 'Other'
+            END = FileNameFormat
+    ) AS SampleFileName
+FROM YourTable
+GROUP BY
+    CASE
+        WHEN FileName LIKE '%[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]%' THEN 'Date'
+        WHEN FileName LIKE '%[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]%' THEN 'Date'
+        WHEN FileName LIKE '%[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]%' THEN 'Date'
+        WHEN FileName LIKE '%_[A-Za-z0-9]%' THEN 'Underscore'
+        WHEN FileName LIKE '%.[A-Za-z0-9]%' THEN 'Dot'
+        WHEN FileName LIKE '%[A-Za-z]%[0-9]%' THEN 'LetterNumber'
+        WHEN FileName LIKE '%[0-9]%[A-Za-z]%' THEN 'NumberLetter'
+        WHEN FileName LIKE '%[A-Za-z]%' THEN 'Letter'
+        WHEN FileName LIKE '%[0-9]%' THEN 'Number'
+        ELSE 'Other'
+    END;
