@@ -200,3 +200,34 @@ FROM (
 ) AS subquery;
 
 --------------
+
+SELECT file_name,
+    CASE
+        WHEN file_name LIKE REPLACE('%.%', '.', '\.') AND file_name LIKE '%[0-9]' THEN '^' + 
+            REPLACE(SUBSTRING(file_name, 1, CHARINDEX('.', file_name) - 1), '_', '\_') +
+            '\.' +
+            '[0-9]+' +
+            '$'
+        WHEN file_name LIKE REPLACE('%_%', '_', '\_') THEN '^' + 
+            REPLACE(SUBSTRING(file_name, 1, CHARINDEX('_', file_name) - 1), '.', '\.') +
+            '\_' +
+            REPLACE(SUBSTRING(file_name, CHARINDEX('_', file_name) + 1, LEN(file_name)), '.', '\.') +
+            '$'
+        WHEN file_name LIKE REPLACE('%\_%\_%', '_', '\_') ESCAPE '\' THEN '^' + 
+            REPLACE(SUBSTRING(file_name, 1, CHARINDEX('_', file_name) - 1), '.', '\.') +
+            '\_' +
+            REPLACE(SUBSTRING(file_name, CHARINDEX('_', file_name) + 1, CHARINDEX('_', file_name, CHARINDEX('_', file_name) + 1) - CHARINDEX('_', file_name) - 1), '.', '\.') +
+            '\_' +
+            REPLACE(SUBSTRING(file_name, CHARINDEX('_', file_name, CHARINDEX('_', file_name) + 1) + 1, LEN(file_name)), '.', '\.') +
+            '$'
+        WHEN file_name LIKE '%[0-9]%' AND file_name LIKE REPLACE('%.%', '.', '\.') THEN '^' + 
+            REPLACE(SUBSTRING(file_name, 1, PATINDEX('%[0-9]%', file_name) - 1), '_', '\_') +
+            '[0-9]+' +
+            '\.' +
+            REPLACE(SUBSTRING(file_name, CHARINDEX('.', file_name) + 1, LEN(file_name)), '_', '\_') +
+            '$'
+        ELSE 'No Match'
+    END AS MatchingRegexPattern
+FROM runs;
+
+--------------------------
